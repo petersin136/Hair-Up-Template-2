@@ -119,3 +119,132 @@ const FALLBACK_SERVICE_CATEGORIES: ServiceCategory[] = [
     ],
   },
 ];
+
+export type Designer = {
+  id: string;
+  name: string;
+  sort_order: number;
+};
+
+export type BookingSettings = {
+  deposit_rate: number;
+  deposit_min: number;
+  time_slots: string[];
+  privacy_terms: string;
+};
+
+const FALLBACK_DESIGNERS: Designer[] = [
+  { id: "d1", name: "미나", sort_order: 1 },
+  { id: "d2", name: "소라", sort_order: 2 },
+  { id: "d3", name: "준우", sort_order: 3 },
+];
+
+const FALLBACK_BOOKING_SETTINGS: BookingSettings = {
+  deposit_rate: 0.2,
+  deposit_min: 10000,
+  time_slots: ["10:00", "10:30", "11:00", "11:30", "13:00", "14:00"],
+  privacy_terms:
+    "수집 항목: 이름, 연락처, 예약 일시, 선택 시술, 요청사항\n이용 목적: 예약 확인, 시술 준비, 노쇼 방지 및 고객 응대\n보유 기간: 관련 법령에 따른 기간 또는 목적 달성 시까지\n동의 거부 시 예약 서비스 이용이 제한될 수 있습니다.",
+};
+
+export async function getDesigners(): Promise<Designer[]> {
+  const { data, error } = await supabase
+    .from("designers")
+    .select("id, name, sort_order")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    console.error("[getDesigners]", error.message);
+    return FALLBACK_DESIGNERS;
+  }
+  return (data?.length ? data : FALLBACK_DESIGNERS) as Designer[];
+}
+
+export async function getBookingSettings(): Promise<BookingSettings> {
+  const { data, error } = await supabase
+    .from("booking_settings")
+    .select("deposit_rate, deposit_min, time_slots, privacy_terms")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (error || !data) {
+    if (error) console.error("[getBookingSettings]", error.message);
+    return FALLBACK_BOOKING_SETTINGS;
+  }
+
+  return {
+    deposit_rate: Number(data.deposit_rate),
+    deposit_min: Number(data.deposit_min),
+    time_slots: (data.time_slots as string[]) ?? FALLBACK_BOOKING_SETTINGS.time_slots,
+    privacy_terms: (data.privacy_terms as string) ?? FALLBACK_BOOKING_SETTINGS.privacy_terms,
+  };
+}
+
+/** 예약금 = max(최소금액, round(합계 × 비율)) */
+export function calcDeposit(
+  total: number,
+  rate: number,
+  min: number,
+): number {
+  if (total <= 0) return 0;
+  return Math.max(min, Math.round(total * rate));
+}
+
+export type CreateBookingInput = {
+  designerId: string | null;
+  designerName: string;
+  bookingDate: string; // YYYY-MM-DD
+  bookingTime: string;
+  customerName: string;
+  customerPhone: string;
+  requests: string;
+  consent: boolean;
+  totalPrice: number;
+  depositAmount: number;
+  services: { id: string; name: string; price: number }[];
+};
+
+export async function createBooking(input: CreateBookingInput) {
+  const { data: booking, error } = await supabase
+    .from("bookings")
+    .insert({
+      designer_id: input.designerId,
+      designer_name: input.designerName,
+      booking_date: input.bookingDate,
+      booking_time: input.bookingTime,
+      customer_name: input.customerName,
+      customer_phone: input.customerPhone,
+      requests: input.requests || null,
+      consent: input.consent,
+      total_price: input.totalPrice,
+      deposit_amount: input.depositAmount,
+      status: "pending_payment",
+    })
+    .select("id")
+    .single();
+
+  if (error || !booking) {
+    return { ok: false as const, error: error?.message ?? "booking insert failed" };
+  }
+
+  if (input.services.length > 0) {
+    const rows = input.services.map((s, i) => ({
+      booking_id: booking.id,
+      service_id: s.id.match(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      )
+        ? s.id
+        : null,
+      service_name: s.name,
+      price: s.price,
+      sort_order: i + 1,
+    }));
+    const { error: svcErr } = await supabase.from("booking_services").insert(rows);
+    if (svcErr) {
+      return { ok: false as const, error: svcErr.message };
+    }
+  }
+
+  return { ok: true as const, id: booking.id as string };
+}

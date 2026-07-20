@@ -1,17 +1,29 @@
 import Image from "next/image";
+import BookingSection, {
+  BOOKING_SECTION_HEIGHT,
+} from "@/components/BookingSection";
 import ServicesSection, {
   SERVICES_SECTION_HEIGHT,
 } from "@/components/ServicesSection";
-import { getServiceCategories, getSiteImages } from "@/lib/supabase";
+import {
+  getBookingSettings,
+  getDesigners,
+  getServiceCategories,
+  getSiteImages,
+} from "@/lib/supabase";
 
 export const revalidate = 60;
 
 const HERO_HEIGHT = 3321;
+const SERVICES_TOP = HERO_HEIGHT;
+const BOOKING_TOP = HERO_HEIGHT + SERVICES_SECTION_HEIGHT;
 
 export default async function Home() {
-  const [images, categories] = await Promise.all([
+  const [images, categories, designers, bookingSettings] = await Promise.all([
     getSiteImages(),
     getServiceCategories(),
+    getDesigners(),
+    getBookingSettings(),
   ]);
   const src = (slot: string) => images[slot]?.url ?? "";
   const alt = (slot: string) => images[slot]?.alt ?? "";
@@ -19,7 +31,9 @@ export default async function Home() {
   return (
     <main
       className="canvas-1440 bg-bg text-fg"
-      style={{ height: HERO_HEIGHT + SERVICES_SECTION_HEIGHT }}
+      style={{
+        height: HERO_HEIGHT + SERVICES_SECTION_HEIGHT + BOOKING_SECTION_HEIGHT,
+      }}
     >
       {/* ---------------- NAV ---------------- */}
       <nav
@@ -254,7 +268,16 @@ export default async function Home() {
       </p>
 
       {/* ---------------- OUR SERVICES ---------------- */}
-      <ServicesSection top={HERO_HEIGHT} categories={categories} />
+      <ServicesSection top={SERVICES_TOP} categories={categories} />
+
+      {/* ---------------- BOOKING ---------------- */}
+      <BookingSection
+        top={BOOKING_TOP}
+        heroUrl={src("booking_hero")}
+        designers={designers}
+        categories={categories}
+        settings={bookingSettings}
+      />
     </main>
   );
 }

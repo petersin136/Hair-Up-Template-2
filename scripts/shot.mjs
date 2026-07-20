@@ -10,7 +10,7 @@ const page = await browser.newPage({
 });
 await page.goto(url, { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
-await page.waitForTimeout(600);
+await page.waitForTimeout(1500);
 await page.screenshot({ path: out, fullPage: true });
 await browser.close();
 console.log("saved", out);

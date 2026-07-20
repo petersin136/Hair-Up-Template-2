@@ -46,3 +46,14 @@ body {
   background: #ffffff;
   color: #171717;
 }
+
+/* BOOKING — CTA (default + hover from design PNGs) */
+.booking-cta-btn {
+  background: #484745;
+  color: #ffffff;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.booking-cta-btn:hover:not(:disabled) {
+  background: #ffffff;
+  color: #171717;
+}
