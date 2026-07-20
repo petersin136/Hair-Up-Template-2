@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/*
+  Base tokens are provisional and will be finalized per-section from the
+  design PNGs (pixel-perfect). Do not treat these as final design values.
+  Base design width: 1440px (desktop, PC-only).
+*/
+:root {
+  --bg: #0a0a0a;
+  --fg: #ffffff;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* Fixed desktop canvas: 1440px design width, centered. */
+.canvas-1440 {
+  width: 1440px;
+  margin-inline: auto;
+  position: relative;
+}
