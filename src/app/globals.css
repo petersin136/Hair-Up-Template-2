@@ -1,24 +1,32 @@
 @import "tailwindcss";
 
 /*
-  Base tokens are provisional and will be finalized per-section from the
-  design PNGs (pixel-perfect). Do not treat these as final design values.
-  Base design width: 1440px (desktop, PC-only).
+  Responsive: 2-tier (PC + Mobile). PC base width: 1440px, Mobile base width: 375px.
+  Confirmed from design PNG: page background is pure #000000.
 */
 :root {
-  --bg: #0a0a0a;
-  --fg: #ffffff;
+  --bg: #000000;
+  --fg: #f4f4f4;
+  --muted: #9a9a9a;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-kr: var(--font-kr);
 }
 
 html,
 body {
   background: var(--bg);
   color: var(--fg);
+}
+
+body {
+  font-family: var(--font-sans), var(--font-kr), system-ui, sans-serif;
 }
 
 /* Fixed desktop canvas: 1440px design width, centered. */
