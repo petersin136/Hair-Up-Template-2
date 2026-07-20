@@ -12,7 +12,17 @@ import {
 } from "@/lib/supabase";
 
 const SECTION_H = 1401;
+/** Hero band until solid black form (from design). */
 const HERO_H = 615;
+/** Calendar — tall widget; bottom sits just above the form. */
+const CAL = { left: 149, top: 128, width: 508, height: 470 } as const;
+/** Approx height of BOOKING title + body + bullets (for vertical centering). */
+const COPY_H = 200;
+const COPY = {
+  left: 742,
+  // Vertically center the copy block against the full calendar (header+body)
+  top: CAL.top + Math.round((CAL.height - COPY_H) / 2),
+} as const;
 
 type OpenMenu =
   | null
@@ -220,21 +230,22 @@ export default function BookingSection({
             priority
             style={{
               objectFit: "cover",
-              filter: "blur(8px) brightness(0.85)",
-              transform: "scale(1.12)",
+              // Sharp background per reference (no out-of-focus blur)
+              filter: "none",
+              transform: "none",
             }}
           />
         )}
-        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.28)" }} />
+        <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.18)" }} />
 
         {/* Calendar */}
         <div
           className="absolute overflow-hidden"
           style={{
-            left: 149,
-            top: 163,
-            width: 508,
-            height: 368,
+            left: CAL.left,
+            top: CAL.top,
+            width: CAL.width,
+            height: CAL.height,
             background: "#ffffff",
             color: "#111",
           }}
@@ -246,8 +257,9 @@ export default function BookingSection({
               background: "#000000",
               color: "#ffffff",
               fontFamily: "var(--font-display)",
-              fontSize: 22,
-              letterSpacing: "0.08em",
+              fontWeight: 400,
+              fontSize: 20,
+              letterSpacing: "0.1em",
               gap: 18,
             }}
           >
@@ -262,7 +274,15 @@ export default function BookingSection({
             </button>
           </div>
 
-          <div style={{ padding: "14px 22px 18px" }}>
+          <div
+            style={{
+              height: CAL.height - 66,
+              padding: "18px 22px 22px",
+              boxSizing: "border-box",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <div
               className="grid"
               style={{
@@ -270,7 +290,7 @@ export default function BookingSection({
                 textAlign: "center",
                 fontFamily: "var(--font-sans)",
                 fontSize: 12,
-                marginBottom: 10,
+                marginBottom: 14,
               }}
             >
               {WEEKDAYS.map((d, i) => (
@@ -280,13 +300,14 @@ export default function BookingSection({
               ))}
             </div>
             <div
-              className="grid"
+              className="grid flex-1"
               style={{
                 gridTemplateColumns: "repeat(7, 1fr)",
+                gridTemplateRows: "repeat(6, 1fr)",
                 textAlign: "center",
                 fontFamily: "var(--font-sans)",
                 fontSize: 15,
-                rowGap: 8,
+                alignContent: "space-between",
               }}
             >
               {cells.map((c, idx) => {
@@ -320,16 +341,16 @@ export default function BookingSection({
           </div>
         </div>
 
-        {/* BOOKING copy */}
-        <div className="absolute" style={{ left: 742, top: 127, width: 560, color: "#fff" }}>
+        {/* BOOKING copy — position/size from design (title sits beside calendar body, not above it) */}
+        <div className="absolute" style={{ left: COPY.left, top: COPY.top, width: 560, color: "#fff" }}>
           <h2
             style={{
               fontFamily: "var(--font-display)",
-              fontWeight: 500,
-              fontSize: 72,
-              letterSpacing: "0.06em",
+              fontWeight: 400,
+              fontSize: 56,
+              letterSpacing: "0.04em",
               lineHeight: 1,
-              marginBottom: 28,
+              marginBottom: 22,
             }}
           >
             BOOKING
@@ -337,11 +358,11 @@ export default function BookingSection({
           <p
             style={{
               fontFamily: "var(--font-kr)",
-              fontSize: 15,
-              lineHeight: "26px",
+              fontSize: 14,
+              lineHeight: "24px",
               fontWeight: 400,
-              maxWidth: 480,
-              marginBottom: 18,
+              maxWidth: 460,
+              marginBottom: 16,
             }}
           >
             신중한 예약과 고객님의 소중한 시간 가치를 위해
@@ -351,12 +372,12 @@ export default function BookingSection({
           <ul
             style={{
               fontFamily: "var(--font-kr)",
-              fontSize: 14,
-              lineHeight: "26px",
+              fontSize: 13,
+              lineHeight: "24px",
               listStyle: "none",
               padding: 0,
               margin: 0,
-              opacity: 0.95,
+              fontWeight: 300,
             }}
           >
             <li>· 예약금은 시술 완료 후 최종 금액에서 차감됩니다.</li>
