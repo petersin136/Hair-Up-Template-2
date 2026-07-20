@@ -1,17 +1,25 @@
 import Image from "next/image";
-import { getSiteImages } from "@/lib/supabase";
+import ServicesSection, {
+  SERVICES_SECTION_HEIGHT,
+} from "@/components/ServicesSection";
+import { getServiceCategories, getSiteImages } from "@/lib/supabase";
 
 export const revalidate = 60;
 
+const HERO_HEIGHT = 3321;
+
 export default async function Home() {
-  const images = await getSiteImages();
+  const [images, categories] = await Promise.all([
+    getSiteImages(),
+    getServiceCategories(),
+  ]);
   const src = (slot: string) => images[slot]?.url ?? "";
   const alt = (slot: string) => images[slot]?.alt ?? "";
 
   return (
     <main
       className="canvas-1440 bg-bg text-fg"
-      style={{ height: 3321 }}
+      style={{ height: HERO_HEIGHT + SERVICES_SECTION_HEIGHT }}
     >
       {/* ---------------- NAV ---------------- */}
       <nav
@@ -162,7 +170,7 @@ export default async function Home() {
           lineHeight: "27px",
         }}
       >
-        일상적인 트렌드를 좇기보다, 낯선 실루엣의 상상력을 좇습니다.
+        일상적인 트렌드를 좇기보다, 낯선 실루엣으로 상상력을 좇습니다.
         <br />
         강렬하게 피어나는 라인으로 실루엣을 완성합니다.
       </p>
@@ -244,6 +252,9 @@ export default async function Home() {
         <br />
         머리카락 끝 올의 결까지 정교하게 담아냅니다.
       </p>
+
+      {/* ---------------- OUR SERVICES ---------------- */}
+      <ServicesSection top={HERO_HEIGHT} categories={categories} />
     </main>
   );
 }

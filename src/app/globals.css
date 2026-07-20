@@ -35,3 +35,14 @@ body {
   margin-inline: auto;
   position: relative;
 }
+
+/* OUR SERVICES — CTA button (default + hover from design PNGs) */
+.svc-book-btn {
+  background: #1a1a1a;
+  color: #c9c7c8;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.svc-book-btn:hover {
+  background: #ffffff;
+  color: #171717;
+}
