@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClientOptions } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * Public project credentials (safe to expose — RLS protects writes).
@@ -15,26 +15,13 @@ const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
   SUPABASE_ANON_KEY_FALLBACK;
 
-function buildOptions(): SupabaseClientOptions<"public"> {
-  const options: SupabaseClientOptions<"public"> = {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  };
-
-  // Node < 22 has no global WebSocket; supabase-js realtime requires one.
-  if (typeof WebSocket === "undefined") {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const ws = require("ws") as typeof import("ws");
-    options.realtime = { transport: ws as unknown as typeof WebSocket };
-  }
-
-  return options;
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, buildOptions());
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+});
 
 export type SiteImage = {
   slot: string;
@@ -45,22 +32,36 @@ export type SiteImage = {
 
 /**
  * Fetches all site images and returns them keyed by their `slot`.
- * Read-only, public data (RLS: public select). Safe to call from Server Components.
+ * Uses plain fetch (not supabase-js realtime) so Vercel Node SSR cannot
+ * fail on missing WebSocket when reading public Storage URLs from the DB.
  */
 export async function getSiteImages(): Promise<Record<string, SiteImage>> {
-  const { data, error } = await supabase
-    .from("site_images")
-    .select("slot, url, alt, sort_order")
-    .order("sort_order", { ascending: true });
+  try {
+    const endpoint = new URL(`${supabaseUrl}/rest/v1/site_images`);
+    endpoint.searchParams.set("select", "slot,url,alt,sort_order");
+    endpoint.searchParams.set("order", "sort_order.asc");
 
-  if (error) {
-    console.error("[getSiteImages]", error.message);
+    const res = await fetch(endpoint, {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      console.error("[getSiteImages]", res.status, await res.text());
+      return {};
+    }
+
+    const data = (await res.json()) as SiteImage[];
+    const map: Record<string, SiteImage> = {};
+    for (const row of data ?? []) map[row.slot] = row;
+    return map;
+  } catch (err) {
+    console.error("[getSiteImages]", err);
     return {};
   }
-
-  const map: Record<string, SiteImage> = {};
-  for (const row of data ?? []) map[row.slot] = row as SiteImage;
-  return map;
 }
 
 export type ServiceItem = {
