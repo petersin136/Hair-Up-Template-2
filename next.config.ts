@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     root: path.join(__dirname),
   },
   images: {
+    // Supabase Storage public objects — verified working with /_next/image on Vercel
     remotePatterns: [
       {
         protocol: "https",

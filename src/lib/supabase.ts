@@ -1,11 +1,40 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClientOptions } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+/**
+ * Public project credentials (safe to expose — RLS protects writes).
+ * Fallback so Vercel works even if Project → Environment Variables
+ * were not configured yet. Prefer setting NEXT_PUBLIC_* on Vercel.
+ */
+const SUPABASE_URL_FALLBACK = "https://ydjzhldfwuqbtukenfbm.supabase.co";
+const SUPABASE_ANON_KEY_FALLBACK =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkanpobGRmd3VxYnR1a2VuZmJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDQwNTUsImV4cCI6MjEwMDEyMDA1NX0.iybfMgqAu6_Nbr153Smy5N-3snJrgp8858XuYeUl_ck";
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: { persistSession: false },
-});
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || SUPABASE_URL_FALLBACK;
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+  SUPABASE_ANON_KEY_FALLBACK;
+
+function buildOptions(): SupabaseClientOptions<"public"> {
+  const options: SupabaseClientOptions<"public"> = {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  };
+
+  // Node < 22 has no global WebSocket; supabase-js realtime requires one.
+  if (typeof WebSocket === "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const ws = require("ws") as typeof import("ws");
+    options.realtime = { transport: ws as unknown as typeof WebSocket };
+  }
+
+  return options;
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, buildOptions());
 
 export type SiteImage = {
   slot: string;
