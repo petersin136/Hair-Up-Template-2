@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   calcDeposit,
   createBooking,
@@ -160,6 +160,34 @@ export default function BookingSection({
   function toggle(menu: OpenMenu) {
     setOpen((prev) => (prev === menu ? null : menu));
   }
+
+  function closeMenus() {
+    setOpen(null);
+    setServiceCategoryId(null);
+  }
+
+  /** Click outside / Escape closes any open dropdown (incl. + 시술 추가). */
+  useEffect(() => {
+    if (!open) return;
+
+    function onPointerDown(e: PointerEvent) {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest("[data-booking-dropdown]")) return;
+      closeMenus();
+    }
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") closeMenus();
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
 
   function prevMonth() {
     if (viewMonth === 1) {
@@ -423,7 +451,7 @@ export default function BookingSection({
         {/* Left column */}
         <div className="absolute" style={{ left: 56, top: 67, width: 633 }}>
           {/* Designer */}
-          <div className="relative" style={{ marginBottom: 0 }}>
+          <div className="relative" data-booking-dropdown style={{ marginBottom: 0 }}>
             <button
               type="button"
               className="flex w-full items-center justify-between"
@@ -475,7 +503,7 @@ export default function BookingSection({
           </div>
 
           {/* Service menu */}
-          <div className="relative" style={{ marginTop: 48 }}>
+          <div className="relative" data-booking-dropdown style={{ marginTop: 48 }}>
             <button
               type="button"
               className="flex w-full items-center justify-between"
@@ -526,8 +554,12 @@ export default function BookingSection({
                 <button
                   type="button"
                   onClick={() => {
-                    setServiceCategoryId(null);
-                    setOpen("category");
+                    if (open === "category" || open === "services") {
+                      closeMenus();
+                    } else {
+                      setServiceCategoryId(null);
+                      setOpen("category");
+                    }
                   }}
                   style={{
                     marginTop: 6,
@@ -599,7 +631,7 @@ export default function BookingSection({
           </div>
 
           {/* Time */}
-          <div className="relative" style={{ marginTop: 48 }}>
+          <div className="relative" data-booking-dropdown style={{ marginTop: 48 }}>
             <button
               type="button"
               className="flex w-full items-center justify-between"
@@ -743,12 +775,20 @@ export default function BookingSection({
             />
           </div>
 
-          <div style={{ marginTop: 28 }}>
-            <div className="flex items-center justify-between" style={{ borderBottom: fieldLine, paddingBottom: 12 }}>
+          <div style={{ marginTop: 28 }} data-booking-dropdown>
+            <div
+              className="flex items-center justify-between"
+              style={{ borderBottom: fieldLine, paddingBottom: 12 }}
+            >
               <button
                 type="button"
                 className="flex items-center gap-3"
-                style={{ cursor: "pointer", background: "transparent", border: "none", padding: 0 }}
+                style={{
+                  cursor: "pointer",
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                }}
                 onClick={() => setConsent((v) => !v)}
               >
                 <span
@@ -766,7 +806,9 @@ export default function BookingSection({
                   }}
                 >
                   {consent && (
-                    <span style={{ color: "#c8c8c8", fontSize: 11, lineHeight: 1 }}>✓</span>
+                    <span style={{ color: "#c8c8c8", fontSize: 11, lineHeight: 1 }}>
+                      ✓
+                    </span>
                   )}
                 </span>
                 <span
@@ -780,7 +822,11 @@ export default function BookingSection({
                   개인정보 수집 및 이용 동의(필수)
                 </span>
               </button>
-              <button type="button" onClick={() => toggle("privacy")} style={{ color: "#6B6B6B" }}>
+              <button
+                type="button"
+                onClick={() => toggle("privacy")}
+                style={{ color: "#6B6B6B" }}
+              >
                 {open === "privacy" ? "▴" : "▾"}
               </button>
             </div>
@@ -844,7 +890,9 @@ export default function BookingSection({
                       .join(" + ")}
                   </div>
                   <div style={{ marginTop: 4, color: "#fff" }}>
-                    = 예약금 {formatWon(deposit)}원
+                    = 합계 {formatWon(total)}원 / 예약금{" "}
+                    {formatWon(deposit)}원 (
+                    {Math.round(settings.deposit_rate * 100)}%)
                   </div>
                 </div>
               ) : (
