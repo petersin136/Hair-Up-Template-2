@@ -30,37 +30,96 @@ export type SiteImage = {
   sort_order: number;
 };
 
+const STORAGE =
+  "https://ydjzhldfwuqbtukenfbm.supabase.co/storage/v1/object/public/site-images";
+
+/** Last-resort public URLs if the DB read fails on the deploy host. */
+const FALLBACK_SITE_IMAGES: Record<string, SiteImage> = {
+  hero_main: {
+    slot: "hero_main",
+    url: `${STORAGE}/rafaella-mendes-diniz-et_78QkMMQs-unsplash2.jpg`,
+    alt: "Hair up hero portrait",
+    sort_order: 1,
+  },
+  portrait_eye: {
+    slot: "portrait_eye",
+    url: `${STORAGE}/see-plus-r2ufKZ2vQh0-unsplash2.jpg`,
+    alt: "Portrait with light across the eye",
+    sort_order: 2,
+  },
+  portrait_flow: {
+    slot: "portrait_flow",
+    url: `${STORAGE}/tengyart-wpRfk1NT6Ng-unsplash.jpg`,
+    alt: "Portrait with flowing hair",
+    sort_order: 3,
+  },
+  portrait_veil: {
+    slot: "portrait_veil",
+    url: `${STORAGE}/igor-rand-sY3CosjuaXw-unsplash2.jpg`,
+    alt: "Portrait with hair veiling the face",
+    sort_order: 4,
+  },
+  booking_hero: {
+    slot: "booking_hero",
+    url: `${STORAGE}/ela-de-pure-y-jhNJt0ZsM-unsplash.jpg`,
+    alt: "Booking hero background",
+    sort_order: 10,
+  },
+};
+
+async function fetchSiteImageRows(
+  url: string,
+  key: string,
+): Promise<Record<string, SiteImage>> {
+  const endpoint = new URL(`${url}/rest/v1/site_images`);
+  endpoint.searchParams.set("select", "slot,url,alt,sort_order");
+  endpoint.searchParams.set("order", "sort_order.asc");
+
+  const res = await fetch(endpoint.toString(), {
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+    },
+    // Avoid caching an empty/error response forever on the CDN edge.
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error("[getSiteImages]", url, res.status, await res.text());
+    return {};
+  }
+
+  const data = (await res.json()) as SiteImage[];
+  const map: Record<string, SiteImage> = {};
+  for (const row of data ?? []) map[row.slot] = row;
+  return map;
+}
+
 /**
  * Fetches all site images and returns them keyed by their `slot`.
- * Uses plain fetch (not supabase-js realtime) so Vercel Node SSR cannot
- * fail on missing WebSocket when reading public Storage URLs from the DB.
+ * Uses plain fetch (not supabase-js realtime). Retries with known-good
+ * credentials if Vercel env vars point at the wrong project, and falls
+ * back to public Storage URLs so the site never ships imageless.
  */
 export async function getSiteImages(): Promise<Record<string, SiteImage>> {
   try {
-    const endpoint = new URL(`${supabaseUrl}/rest/v1/site_images`);
-    endpoint.searchParams.set("select", "slot,url,alt,sort_order");
-    endpoint.searchParams.set("order", "sort_order.asc");
+    let map = await fetchSiteImageRows(supabaseUrl, supabaseAnonKey);
 
-    const res = await fetch(endpoint, {
-      headers: {
-        apikey: supabaseAnonKey,
-        Authorization: `Bearer ${supabaseAnonKey}`,
-      },
-      next: { revalidate: 60 },
-    });
+    const usingFallbackCreds =
+      supabaseUrl === SUPABASE_URL_FALLBACK &&
+      supabaseAnonKey === SUPABASE_ANON_KEY_FALLBACK;
 
-    if (!res.ok) {
-      console.error("[getSiteImages]", res.status, await res.text());
-      return {};
+    if (Object.keys(map).length === 0 && !usingFallbackCreds) {
+      map = await fetchSiteImageRows(
+        SUPABASE_URL_FALLBACK,
+        SUPABASE_ANON_KEY_FALLBACK,
+      );
     }
 
-    const data = (await res.json()) as SiteImage[];
-    const map: Record<string, SiteImage> = {};
-    for (const row of data ?? []) map[row.slot] = row;
-    return map;
+    return Object.keys(map).length > 0 ? map : FALLBACK_SITE_IMAGES;
   } catch (err) {
     console.error("[getSiteImages]", err);
-    return {};
+    return FALLBACK_SITE_IMAGES;
   }
 }
 
