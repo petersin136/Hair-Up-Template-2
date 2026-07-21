@@ -57,3 +57,12 @@ body {
   background: #ffffff;
   color: #171717;
 }
+.booking-cta-btn:hover:not(:disabled) span {
+  color: #171717 !important;
+}
+
+.booking-field-input::placeholder {
+  color: #9a9a9a;
+  opacity: 1;
+  font-weight: 400;
+}

@@ -10,19 +10,27 @@ import {
   type ServiceCategory,
   type ServiceItem,
 } from "@/lib/supabase";
+import { BOOKING_SECTION_HEIGHT as SECTION_H } from "@/lib/sections";
 
-const SECTION_H = 1401;
 /** Hero band until solid black form (from design). */
 const HERO_H = 615;
-/** Calendar — tall widget; bottom sits just above the form. */
-const CAL = { left: 149, top: 128, width: 508, height: 470 } as const;
+/** Calendar — vertically centered; height sized for ≤5–6 weeks without next-month dates. */
+const CAL_H = 400;
+const CAL = {
+  left: 149,
+  width: 508,
+  height: CAL_H,
+  top: Math.round((HERO_H - CAL_H) / 2),
+} as const;
 /** Approx height of BOOKING title + body + bullets (for vertical centering). */
 const COPY_H = 200;
 const COPY = {
   left: 742,
-  // Vertically center the copy block against the full calendar (header+body)
   top: CAL.top + Math.round((CAL.height - COPY_H) / 2),
 } as const;
+
+/** Fixed label width so `<` / `>` stay put for the longest month name. */
+const MONTH_LABEL_WIDTH = 230;
 
 type OpenMenu =
   | null
@@ -74,12 +82,19 @@ const MONTHS = [
 
 function buildCalendarDays(year: number, month: number) {
   // month: 1-12. Grid starts Monday.
+  // Leading (prev-month) days shown dimmed; trailing next-month days are blank (hidden).
   const first = new Date(year, month - 1, 1);
   const firstDow = (first.getDay() + 6) % 7; // Mon=0
   const daysInMonth = new Date(year, month, 0).getDate();
   const prevDays = new Date(year, month - 1, 0).getDate();
 
-  const cells: { day: number; inMonth: boolean; key: string }[] = [];
+  const cells: {
+    day: number;
+    inMonth: boolean;
+    empty?: boolean;
+    key: string;
+  }[] = [];
+
   for (let i = 0; i < firstDow; i++) {
     const d = prevDays - firstDow + 1 + i;
     const pm = month === 1 ? 12 : month - 1;
@@ -89,13 +104,9 @@ function buildCalendarDays(year: number, month: number) {
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push({ day: d, inMonth: true, key: toDateKey(year, month, d) });
   }
-  let n = 1;
-  while (cells.length % 7 !== 0 || cells.length < 42) {
-    const nm = month === 12 ? 1 : month + 1;
-    const ny = month === 12 ? year + 1 : year;
-    cells.push({ day: n, inMonth: false, key: toDateKey(ny, nm, n) });
-    n++;
-    if (cells.length >= 42) break;
+  // Complete only the last week — no extra weeks of next-month dates
+  while (cells.length % 7 !== 0) {
+    cells.push({ day: 0, inMonth: false, empty: true, key: `pad-${cells.length}` });
   }
   return cells;
 }
@@ -230,7 +241,8 @@ export default function BookingSection({
             priority
             style={{
               objectFit: "cover",
-              // Sharp background per reference (no out-of-focus blur)
+              // Match reference crop: shelf/products sit higher in the frame
+              objectPosition: "50% 18%",
               filter: "none",
               transform: "none",
             }}
@@ -260,16 +272,33 @@ export default function BookingSection({
               fontWeight: 400,
               fontSize: 20,
               letterSpacing: "0.1em",
-              gap: 18,
+              gap: 16,
             }}
           >
-            <button type="button" onClick={prevMonth} aria-label="Previous month" style={{ opacity: 0.9 }}>
+            <button
+              type="button"
+              onClick={prevMonth}
+              aria-label="Previous month"
+              style={{ width: 28, flexShrink: 0, opacity: 0.9 }}
+            >
               &lt;
             </button>
-            <span>
+            <span
+              style={{
+                display: "inline-block",
+                width: MONTH_LABEL_WIDTH,
+                textAlign: "center",
+                flexShrink: 0,
+              }}
+            >
               {MONTHS[viewMonth - 1]} {viewYear}
             </span>
-            <button type="button" onClick={nextMonth} aria-label="Next month" style={{ opacity: 0.9 }}>
+            <button
+              type="button"
+              onClick={nextMonth}
+              aria-label="Next month"
+              style={{ width: 28, flexShrink: 0, opacity: 0.9 }}
+            >
               &gt;
             </button>
           </div>
@@ -303,7 +332,7 @@ export default function BookingSection({
               className="grid flex-1"
               style={{
                 gridTemplateColumns: "repeat(7, 1fr)",
-                gridTemplateRows: "repeat(6, 1fr)",
+                gridAutoRows: "1fr",
                 textAlign: "center",
                 fontFamily: "var(--font-sans)",
                 fontSize: 15,
@@ -313,6 +342,9 @@ export default function BookingSection({
               {cells.map((c, idx) => {
                 const isSun = idx % 7 === 6;
                 const selected = c.inMonth && c.key === selectedDate;
+                if (c.empty) {
+                  return <div key={c.key} />;
+                }
                 return (
                   <button
                     key={`${c.key}-${idx}`}
@@ -372,12 +404,12 @@ export default function BookingSection({
           <ul
             style={{
               fontFamily: "var(--font-kr)",
-              fontSize: 13,
+              fontSize: 14,
               lineHeight: "24px",
               listStyle: "none",
               padding: 0,
               margin: 0,
-              fontWeight: 300,
+              fontWeight: 400,
             }}
           >
             <li>· 예약금은 시술 완료 후 최종 금액에서 차감됩니다.</li>
@@ -628,15 +660,17 @@ export default function BookingSection({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="이름"
+              className="booking-field-input"
               style={{
                 width: "100%",
                 height: 44,
                 border: "none",
                 borderBottom: fieldLine,
                 background: "transparent",
-                color: "#fff",
+                color: "#c8c8c8",
                 fontFamily: "var(--font-kr)",
                 fontSize: 16,
+                fontWeight: 400,
                 outline: "none",
               }}
             />
@@ -647,15 +681,17 @@ export default function BookingSection({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="전화번호"
+              className="booking-field-input"
               style={{
                 width: "100%",
                 height: 44,
                 border: "none",
                 borderBottom: fieldLine,
                 background: "transparent",
-                color: "#fff",
+                color: "#c8c8c8",
                 fontFamily: "var(--font-kr)",
                 fontSize: 16,
+                fontWeight: 400,
                 outline: "none",
               }}
             />
@@ -666,7 +702,8 @@ export default function BookingSection({
               style={{
                 fontFamily: "var(--font-kr)",
                 fontSize: 16,
-                color: "#fff",
+                fontWeight: 400,
+                color: "#9a9a9a",
                 marginBottom: 8,
               }}
             >
@@ -677,7 +714,8 @@ export default function BookingSection({
                 fontFamily: "var(--font-kr)",
                 fontSize: 12,
                 lineHeight: "18px",
-                color: "#9a9a9a",
+                fontWeight: 400,
+                color: "#7a7a7a",
                 marginBottom: 10,
               }}
             >
@@ -688,14 +726,16 @@ export default function BookingSection({
               value={requests}
               onChange={(e) => setRequests(e.target.value)}
               rows={3}
+              className="booking-field-input"
               style={{
                 width: "100%",
                 border: "none",
                 borderBottom: fieldLine,
                 background: "transparent",
-                color: "#fff",
+                color: "#c8c8c8",
                 fontFamily: "var(--font-kr)",
                 fontSize: 15,
+                fontWeight: 400,
                 outline: "none",
                 resize: "none",
                 lineHeight: "22px",
@@ -705,18 +745,42 @@ export default function BookingSection({
 
           <div style={{ marginTop: 28 }}>
             <div className="flex items-center justify-between" style={{ borderBottom: fieldLine, paddingBottom: 12 }}>
-              <label className="flex items-center gap-3" style={{ cursor: "pointer" }}>
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  onChange={(e) => setConsent(e.target.checked)}
-                  style={{ width: 16, height: 16, accentColor: "#fff" }}
-                />
-                <span style={{ fontFamily: "var(--font-kr)", fontSize: 15, color: "#fff" }}>
+              <button
+                type="button"
+                className="flex items-center gap-3"
+                style={{ cursor: "pointer", background: "transparent", border: "none", padding: 0 }}
+                onClick={() => setConsent((v) => !v)}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 16,
+                    height: 16,
+                    boxSizing: "border-box",
+                    border: "1px solid #6B6B6B",
+                    background: consent ? "#111111" : "transparent",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {consent && (
+                    <span style={{ color: "#c8c8c8", fontSize: 11, lineHeight: 1 }}>✓</span>
+                  )}
+                </span>
+                <span
+                  style={{
+                    fontFamily: "var(--font-kr)",
+                    fontSize: 15,
+                    fontWeight: 400,
+                    color: "#6B6B6B",
+                  }}
+                >
                   개인정보 수집 및 이용 동의(필수)
                 </span>
-              </label>
-              <button type="button" onClick={() => toggle("privacy")} style={{ color: "#fff" }}>
+              </button>
+              <button type="button" onClick={() => toggle("privacy")} style={{ color: "#6B6B6B" }}>
                 {open === "privacy" ? "▴" : "▾"}
               </button>
             </div>
@@ -820,12 +884,18 @@ export default function BookingSection({
                 paddingRight: 22,
                 fontFamily: "var(--font-kr)",
                 fontSize: 15,
+                fontWeight: 400,
+                color: "#ffffff",
                 opacity: canSubmit ? 1 : 0.45,
                 cursor: canSubmit ? "pointer" : "not-allowed",
               }}
             >
-              <span>{pending ? "저장 중…" : "예약 확정 및 예약금 결제하기"}</span>
-              <span aria-hidden>&gt;</span>
+              <span style={{ color: "#ffffff" }}>
+                {pending ? "저장 중…" : "예약 확정 및 예약금 결제하기"}
+              </span>
+              <span aria-hidden style={{ color: "#ffffff" }}>
+                &gt;
+              </span>
             </button>
           </div>
         </div>
@@ -833,5 +903,3 @@ export default function BookingSection({
     </section>
   );
 }
-
-export const BOOKING_SECTION_HEIGHT = SECTION_H;

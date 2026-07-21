@@ -1,7 +1,7 @@
 import type { ServiceCategory } from "@/lib/supabase";
+import { SERVICES_SECTION_HEIGHT as SECTION_H } from "@/lib/sections";
 
 /** Pixel-perfect OUR SERVICES section (PC 1440). Positions from design PNG. */
-const SECTION_H = 1108;
 
 /** Measured divider colors (per-position, not unified). */
 const DIVIDERS: { top: number; color: string }[] = [
@@ -152,5 +152,3 @@ export default function ServicesSection({ top, categories }: Props) {
     </section>
   );
 }
-
-export const SERVICES_SECTION_HEIGHT = SECTION_H;

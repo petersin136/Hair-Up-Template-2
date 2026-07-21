@@ -1,10 +1,13 @@
 import Image from "next/image";
-import BookingSection, {
+import BookingSection from "@/components/BookingSection";
+import FeatureVideo from "@/components/FeatureVideo";
+import ServicesSection from "@/components/ServicesSection";
+import {
   BOOKING_SECTION_HEIGHT,
-} from "@/components/BookingSection";
-import ServicesSection, {
+  FEATURE_VIDEO_HEIGHT,
+  HERO_HEIGHT,
   SERVICES_SECTION_HEIGHT,
-} from "@/components/ServicesSection";
+} from "@/lib/sections";
 import {
   getBookingSettings,
   getDesigners,
@@ -14,9 +17,9 @@ import {
 
 export const revalidate = 60;
 
-const HERO_HEIGHT = 3321;
 const SERVICES_TOP = HERO_HEIGHT;
 const BOOKING_TOP = HERO_HEIGHT + SERVICES_SECTION_HEIGHT;
+const VIDEO_TOP = BOOKING_TOP + BOOKING_SECTION_HEIGHT;
 
 export default async function Home() {
   const [images, categories, designers, bookingSettings] = await Promise.all([
@@ -32,7 +35,11 @@ export default async function Home() {
     <main
       className="canvas-1440 bg-bg text-fg"
       style={{
-        height: HERO_HEIGHT + SERVICES_SECTION_HEIGHT + BOOKING_SECTION_HEIGHT,
+        height:
+          HERO_HEIGHT +
+          SERVICES_SECTION_HEIGHT +
+          BOOKING_SECTION_HEIGHT +
+          FEATURE_VIDEO_HEIGHT,
       }}
     >
       {/* ---------------- NAV ---------------- */}
@@ -278,6 +285,9 @@ export default async function Home() {
         categories={categories}
         settings={bookingSettings}
       />
+
+      {/* ---------------- FEATURE VIDEO ---------------- */}
+      <FeatureVideo top={VIDEO_TOP} />
     </main>
   );
 }
