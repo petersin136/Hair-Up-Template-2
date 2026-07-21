@@ -9,11 +9,13 @@ const SUPABASE_URL_FALLBACK = "https://ydjzhldfwuqbtukenfbm.supabase.co";
 const SUPABASE_ANON_KEY_FALLBACK =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkanpobGRmd3VxYnR1a2VuZmJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1NDQwNTUsImV4cCI6MjEwMDEyMDA1NX0.iybfMgqAu6_Nbr153Smy5N-3snJrgp8858XuYeUl_ck";
 
+const envUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+const envKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
+/** Prefer env only when it points at this project; otherwise use known-good defaults. */
 const supabaseUrl =
-  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || SUPABASE_URL_FALLBACK;
-const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
-  SUPABASE_ANON_KEY_FALLBACK;
+  envUrl?.includes("ydjzhldfwuqbtukenfbm") ? envUrl : SUPABASE_URL_FALLBACK;
+const supabaseAnonKey = envKey || SUPABASE_ANON_KEY_FALLBACK;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
