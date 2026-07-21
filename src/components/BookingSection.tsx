@@ -227,7 +227,7 @@ export default function BookingSection({
     <section
       id="booking"
       className="absolute left-0 w-full"
-      style={{ top, height: SECTION_H }}
+      style={{ top, height: SECTION_H, scrollMarginTop: 24 }}
       aria-label="Booking"
     >
       {/* -------- HERO -------- */}

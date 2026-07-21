@@ -30,8 +30,9 @@ type Props = {
 export default function ServicesSection({ top, categories }: Props) {
   return (
     <section
+      id="services"
       className="absolute left-0 w-full"
-      style={{ top, height: SECTION_H }}
+      style={{ top, height: SECTION_H, scrollMarginTop: 24 }}
       aria-label="Our Services"
     >
       {DIVIDERS.map((d) => (

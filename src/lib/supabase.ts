@@ -67,6 +67,12 @@ const FALLBACK_SITE_IMAGES: Record<string, SiteImage> = {
     alt: "Booking hero background",
     sort_order: 10,
   },
+  location_interior: {
+    slot: "location_interior",
+    url: `${STORAGE}/ela-de-pure-V0Jz0gkzI5s-unsplash.jpg`,
+    alt: "Salon interior product wall",
+    sort_order: 20,
+  },
 };
 
 async function fetchSiteImageRows(
@@ -338,4 +344,153 @@ export async function createBooking(input: CreateBookingInput) {
   }
 
   return { ok: true as const, id: booking.id as string };
+}
+
+/* ---------------- REVIEW + Instagram ---------------- */
+
+export type Review = {
+  id: string;
+  artist_name: string;
+  service_label: string;
+  body: string;
+  rating: number;
+  reviewer_mask: string;
+  reviewed_on: string;
+  image_url: string;
+  sort_order: number;
+};
+
+export type InstagramPost = {
+  id: string;
+  image_url: string;
+  alt: string | null;
+  sort_order: number;
+};
+
+const STORAGE_PUBLIC =
+  "https://ydjzhldfwuqbtukenfbm.supabase.co/storage/v1/object/public/site-images";
+
+const FALLBACK_REVIEWS: Review[] = [
+  {
+    id: "r-mina",
+    artist_name: "미나",
+    service_label: "DESIGNER CUT & SCALP HEAD SPA",
+    body: "처음 방문했는데 유미 디렉터님의 섬세한 터치와 1:1 맞춤 상담이 인상 깊었습니다. 특히 프라이빗한 샴푸실에서 진행된 두피 스파 케어는 일상의 피로가 모두 녹아내리는 최고의 힐링이었습니다. 커트 선 하나하나 세심하게 신경 써주셔서 손질하기가 아주 편합니다.",
+    rating: 5,
+    reviewer_mask: "pp*****",
+    reviewed_on: "26-06-28",
+    // Hair portrait next to REVIEW (mockup hero look)
+    image_url: `${STORAGE_PUBLIC}/rafaella-mendes-diniz-et_78QkMMQs-unsplash2.jpg`,
+    sort_order: 1,
+  },
+  {
+    id: "r-junu",
+    artist_name: "준우",
+    service_label: "SIGNATURE PERM",
+    body: "살롱 무드가 고급스럽고, 모질과 얼굴형에 맞춘 스타일 제안이 정확했습니다. 손상 없이 자연스럽게 살아나는 컬 라인이 특히 마음에 들어요. 시술 후에도 손질이 편해서 만족도가 높습니다.",
+    rating: 4,
+    reviewer_mask: "MM*****",
+    reviewed_on: "26-06-28",
+    image_url: `${STORAGE_PUBLIC}/tengyart-wpRfk1NT6Ng-unsplash.jpg`,
+    sort_order: 2,
+  },
+  {
+    id: "r-sora",
+    artist_name: "소라",
+    service_label: "PREMIUM COLOR & CLINIC",
+    body: "전체 염색과 클리닉을 함께 진행했는데, 모발 손상 없이 오히려 머릿결이 이전보다 더 단단하고 윤기 있게 개선되어 놀랐습니다. 퍼스널 컬러에 맞춘 정교한 톤 매칭부터 시술 중간중간 세심하게 챙겨주시는 배려까지, 프로페셔널함의 격이 다른 곳입니다.",
+    rating: 4,
+    reviewer_mask: "BR*****",
+    reviewed_on: "26-06-28",
+    image_url: `${STORAGE_PUBLIC}/happy-face-emoji-ShBsiIbYJmY-unsplash.jpg`,
+    sort_order: 3,
+  },
+];
+
+const FALLBACK_INSTAGRAM: InstagramPost[] = [
+  {
+    id: "ig-1",
+    image_url: `${STORAGE_PUBLIC}/katsiaryna-endruszkiewicz-yZviQtYoP08-unsplash2.jpg`,
+    alt: "Hair in motion",
+    sort_order: 1,
+  },
+  {
+    id: "ig-2",
+    image_url: `${STORAGE_PUBLIC}/rafaella-mendes-diniz-et_78QkMMQs-unsplash2.jpg`,
+    alt: "Signature hair portrait",
+    sort_order: 2,
+  },
+  {
+    id: "ig-3",
+    image_url: `${STORAGE_PUBLIC}/megan-bagshaw-YmaaUNbHHtw-unsplash.jpg`,
+    alt: "Men's cut profile",
+    sort_order: 3,
+  },
+  {
+    id: "ig-4",
+    image_url: `${STORAGE_PUBLIC}/happy-face-emoji-ShBsiIbYJmY-unsplash.jpg`,
+    alt: "Editorial color portrait",
+    sort_order: 4,
+  },
+  {
+    id: "ig-5",
+    image_url: `${STORAGE_PUBLIC}/igor-rand-sY3CosjuaXw-unsplash2.jpg`,
+    alt: "Close-up portrait",
+    sort_order: 5,
+  },
+];
+
+export const INSTAGRAM_URL = "https://www.instagram.com/hairup/";
+
+export async function getReviews(): Promise<Review[]> {
+  try {
+    const endpoint = new URL(`${supabaseUrl}/rest/v1/reviews`);
+    endpoint.searchParams.set(
+      "select",
+      "id,artist_name,service_label,body,rating,reviewer_mask,reviewed_on,image_url,sort_order",
+    );
+    endpoint.searchParams.set("is_active", "eq.true");
+    endpoint.searchParams.set("order", "sort_order.asc");
+
+    const res = await fetch(endpoint.toString(), {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      // Table not created yet (PGRST205) — use seed fallbacks quietly.
+      return FALLBACK_REVIEWS;
+    }
+    const data = (await res.json()) as Review[];
+    return data?.length ? data : FALLBACK_REVIEWS;
+  } catch {
+    return FALLBACK_REVIEWS;
+  }
+}
+
+export async function getInstagramPosts(): Promise<InstagramPost[]> {
+  try {
+    const endpoint = new URL(`${supabaseUrl}/rest/v1/instagram_posts`);
+    endpoint.searchParams.set("select", "id,image_url,alt,sort_order");
+    endpoint.searchParams.set("is_active", "eq.true");
+    endpoint.searchParams.set("order", "sort_order.asc");
+
+    const res = await fetch(endpoint.toString(), {
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      // Table not created yet (PGRST205) — use seed fallbacks quietly.
+      return FALLBACK_INSTAGRAM;
+    }
+    const data = (await res.json()) as InstagramPost[];
+    return data?.length ? data : FALLBACK_INSTAGRAM;
+  } catch {
+    return FALLBACK_INSTAGRAM;
+  }
 }

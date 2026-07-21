@@ -1,16 +1,23 @@
 import Image from "next/image";
 import BookingSection from "@/components/BookingSection";
 import FeatureVideo from "@/components/FeatureVideo";
+import LocationFooter from "@/components/LocationFooter";
+import ReviewSection from "@/components/ReviewSection";
 import ServicesSection from "@/components/ServicesSection";
 import {
   BOOKING_SECTION_HEIGHT,
   FEATURE_VIDEO_HEIGHT,
+  FOOTER_SECTION_HEIGHT,
   HERO_HEIGHT,
+  LOCATION_SECTION_HEIGHT,
+  REVIEW_SECTION_HEIGHT,
   SERVICES_SECTION_HEIGHT,
 } from "@/lib/sections";
 import {
   getBookingSettings,
   getDesigners,
+  getInstagramPosts,
+  getReviews,
   getServiceCategories,
   getSiteImages,
 } from "@/lib/supabase";
@@ -20,14 +27,22 @@ export const revalidate = 60;
 const SERVICES_TOP = HERO_HEIGHT;
 const BOOKING_TOP = HERO_HEIGHT + SERVICES_SECTION_HEIGHT;
 const VIDEO_TOP = BOOKING_TOP + BOOKING_SECTION_HEIGHT;
+const REVIEW_TOP = VIDEO_TOP + FEATURE_VIDEO_HEIGHT;
+const LOCATION_TOP = REVIEW_TOP + REVIEW_SECTION_HEIGHT;
+
+const LOCATION_FALLBACK =
+  "https://ydjzhldfwuqbtukenfbm.supabase.co/storage/v1/object/public/site-images/ela-de-pure-V0Jz0gkzI5s-unsplash.jpg";
 
 export default async function Home() {
-  const [images, categories, designers, bookingSettings] = await Promise.all([
-    getSiteImages(),
-    getServiceCategories(),
-    getDesigners(),
-    getBookingSettings(),
-  ]);
+  const [images, categories, designers, bookingSettings, reviews, igPosts] =
+    await Promise.all([
+      getSiteImages(),
+      getServiceCategories(),
+      getDesigners(),
+      getBookingSettings(),
+      getReviews(),
+      getInstagramPosts(),
+    ]);
   const src = (slot: string) => images[slot]?.url ?? "";
   const alt = (slot: string) => images[slot]?.alt ?? "";
 
@@ -39,12 +54,15 @@ export default async function Home() {
           HERO_HEIGHT +
           SERVICES_SECTION_HEIGHT +
           BOOKING_SECTION_HEIGHT +
-          FEATURE_VIDEO_HEIGHT,
+          FEATURE_VIDEO_HEIGHT +
+          REVIEW_SECTION_HEIGHT +
+          LOCATION_SECTION_HEIGHT +
+          FOOTER_SECTION_HEIGHT,
       }}
     >
       {/* ---------------- NAV ---------------- */}
       <nav
-        className="absolute flex items-center justify-between"
+        className="absolute z-50 flex items-center justify-between"
         style={{ top: 42, left: 49, right: 55, height: 46 }}
       >
         <ul
@@ -57,15 +75,36 @@ export default async function Home() {
             fontWeight: 400,
           }}
         >
-          <li className="uppercase" style={{ borderBottom: "1px solid #f4f4f4", paddingBottom: 2 }}>
-            About
+          <li>
+            <a
+              href="#about"
+              className="uppercase text-[#f4f4f4] transition-opacity hover:opacity-70"
+              style={{ borderBottom: "1px solid #f4f4f4", paddingBottom: 2 }}
+            >
+              About
+            </a>
           </li>
-          <li className="uppercase text-muted">Services</li>
-          <li className="uppercase text-muted">Review</li>
+          <li>
+            <a
+              href="#services"
+              className="uppercase text-muted transition-colors hover:text-[#f4f4f4]"
+            >
+              Services
+            </a>
+          </li>
+          <li>
+            <a
+              href="#review"
+              className="uppercase text-muted transition-colors hover:text-[#f4f4f4]"
+            >
+              Review
+            </a>
+          </li>
         </ul>
 
-        <button
-          className="uppercase"
+        <a
+          href="#booking"
+          className="inline-flex items-center justify-center uppercase transition-opacity hover:opacity-85"
           style={{
             width: 195,
             height: 45,
@@ -78,11 +117,12 @@ export default async function Home() {
           }}
         >
           Book Now
-        </button>
+        </a>
       </nav>
 
       {/* ---------------- HERO TITLE ---------------- */}
       <h1
+        id="about"
         className="absolute text-center"
         style={{
           top: 138,
@@ -95,6 +135,8 @@ export default async function Home() {
           letterSpacing: "0.02em",
           lineHeight: 1,
           color: "#f4f4f4",
+          scrollMarginTop: 24,
+          pointerEvents: "none",
         }}
       >
         Hair up
@@ -288,6 +330,15 @@ export default async function Home() {
 
       {/* ---------------- FEATURE VIDEO ---------------- */}
       <FeatureVideo top={VIDEO_TOP} />
+
+      {/* ---------------- REVIEW + Instagram ---------------- */}
+      <ReviewSection top={REVIEW_TOP} reviews={reviews} posts={igPosts} />
+
+      {/* ---------------- HOURS / LOCATION + FOOTER ---------------- */}
+      <LocationFooter
+        top={LOCATION_TOP}
+        imageUrl={src("location_interior") || LOCATION_FALLBACK}
+      />
     </main>
   );
 }

@@ -25,6 +25,10 @@ body {
   color: var(--fg);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-sans), var(--font-kr), system-ui, sans-serif;
 }
