@@ -76,46 +76,23 @@ export default async function Home() {
           }}
         >
           <li>
-            <a
-              href="#about"
-              className="uppercase text-[#f4f4f4] transition-opacity hover:opacity-70"
-              style={{ borderBottom: "1px solid #f4f4f4", paddingBottom: 2 }}
-            >
+            <a href="#about" className="site-nav-link is-active uppercase">
               About
             </a>
           </li>
           <li>
-            <a
-              href="#services"
-              className="uppercase text-muted transition-colors hover:text-[#f4f4f4]"
-            >
+            <a href="#services" className="site-nav-link uppercase">
               Services
             </a>
           </li>
           <li>
-            <a
-              href="#review"
-              className="uppercase text-muted transition-colors hover:text-[#f4f4f4]"
-            >
+            <a href="#review" className="site-nav-link uppercase">
               Review
             </a>
           </li>
         </ul>
 
-        <a
-          href="#booking"
-          className="inline-flex items-center justify-center uppercase transition-opacity hover:opacity-85"
-          style={{
-            width: 195,
-            height: 45,
-            background: "#292929",
-            color: "#ffffff",
-            fontFamily: "var(--font-sans)",
-            fontSize: 12,
-            letterSpacing: "0.14em",
-            borderRadius: 3,
-          }}
-        >
+        <a href="#booking" className="site-book-now-btn uppercase">
           Book Now
         </a>
       </nav>

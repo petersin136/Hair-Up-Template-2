@@ -33,6 +33,43 @@ body {
   font-family: var(--font-sans), var(--font-kr), system-ui, sans-serif;
 }
 
+/* Header nav — brighten + underline on hover */
+.site-nav-link {
+  color: #9a9a9a;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.site-nav-link:hover,
+.site-nav-link.is-active {
+  color: #f4f4f4;
+  border-bottom-color: #f4f4f4;
+}
+
+/* Header BOOK NOW — invert on hover */
+.site-book-now-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 195px;
+  height: 45px;
+  background: #292929;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  border-radius: 3px;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.site-book-now-btn:hover {
+  background: #ffffff;
+  color: #171717;
+}
+
 /* Fixed desktop canvas: 1440px design width, centered. */
 .canvas-1440 {
   width: 1440px;
