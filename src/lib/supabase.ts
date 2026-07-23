@@ -180,7 +180,7 @@ const FALLBACK_SERVICE_CATEGORIES: ServiceCategory[] = [
     label: "CUT",
     sort_order: 1,
     services: [
-      { id: "cut-1", name: "컷", price: 25000, sort_order: 1 },
+      { id: "cut-1", name: "기본 컷", price: 25000, sort_order: 1 },
       { id: "cut-2", name: "시그니처 레이어드 / 디자인 컷", price: 35000, sort_order: 2 },
       { id: "cut-3", name: "맨즈 디자인 컷 (+ 다운펌 패키지)", price: 60000, sort_order: 3 },
     ],

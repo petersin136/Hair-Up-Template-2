@@ -440,8 +440,8 @@ export default function BookingSection({
               fontWeight: 400,
             }}
           >
-            <li>· 예약금은 시술 완료 후 최종 금액에서 차감됩니다.</li>
-            <li>· 직급 및 모량에 따라 수수료가 적용될 수 있습니다.</li>
+            <li>▪ 예약금은 시술 완료 후 최종 금액에서 차감됩니다.</li>
+            <li>▪ 직급 및 모량에 따라 수수료가 적용될 수 있습니다.</li>
           </ul>
         </div>
       </div>

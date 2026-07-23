@@ -195,7 +195,7 @@ export default async function Home() {
           color: "#dcdcdc",
         }}
       >
-        비주얼 아티스트 Mina Kim이 재단하는 헤어의 미학
+        비주얼 아티스트 Mina Kim이 제안하는 헤어의 미학
       </p>
 
       <p
@@ -210,9 +210,9 @@ export default async function Home() {
           lineHeight: "27px",
         }}
       >
-        일상적인 트렌드를 좇기보다, 낯선 실루엣으로 상상력을 좇습니다.
+        일시적인 트렌드를 좇기보다, 당신 본연의 정체성과 삶의 우아함에
         <br />
-        강렬하게 피어나는 라인으로 실루엣을 완성합니다.
+        완벽하게 녹아드는 비스포크 실루엣을 디자인합니다.
       </p>
 
       {/* ---------------- PORTRAITS GRID ---------------- */}
@@ -288,9 +288,9 @@ export default async function Home() {
           lineHeight: "22px",
         }}
       >
-        오직 한 사람을 향한 고요한 몰입의 시간,
+        오직 한 사람을 향한 고요한 몰입의 시간.
         <br />
-        머리카락 끝 올의 결까지 정교하게 담아냅니다.
+        머리카락 한 올의 정취까지 정교하게 담아냅니다.
       </p>
 
       {/* ---------------- OUR SERVICES ---------------- */}

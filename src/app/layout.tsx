@@ -22,6 +22,9 @@ const notoKr = Noto_Sans_KR({
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-kr",
   display: "swap",
+  // CJK fonts ship as 100+ unicode-range files — preload must be off.
+  preload: false,
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {

@@ -54,7 +54,7 @@ on conflict (id) do update
 delete from public.services;
 
 insert into public.services (category_id, name, price, sort_order) values
-  ('cut',    '컷',                                 25000,  1),
+  ('cut',    '기본 컷',                             25000,  1),
   ('cut',    '시그니처 레이어드 / 디자인 컷',       35000,  2),
   ('cut',    '맨즈 디자인 컷 (+ 다운펌 패키지)',    60000,  3),
   ('perm',   '디자인 일반펌',                       90000,  1),
