@@ -141,7 +141,12 @@ export default function ServicesSection({ top, categories }: Props) {
                   }}
                 >
                   <span>{svc.name}</span>
-                  <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                  <span
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
                     {formatPrice(svc.price)}
                   </span>
                 </div>

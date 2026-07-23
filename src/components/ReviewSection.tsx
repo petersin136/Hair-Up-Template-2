@@ -30,7 +30,13 @@ function Stars({ rating }: { rating: number }) {
   return (
     <div
       className="flex"
-      style={{ gap: 4, color: "#ffffff", fontSize: 14, letterSpacing: "0.12em" }}
+      style={{
+        gap: 4,
+        color: "#ffffff",
+        fontFamily: "var(--font-sans)",
+        fontSize: 14,
+        letterSpacing: "0.12em",
+      }}
       aria-label={`${rating} out of 5 stars`}
     >
       {Array.from({ length: rating }, (_, i) => (

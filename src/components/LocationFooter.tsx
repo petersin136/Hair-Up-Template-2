@@ -91,9 +91,9 @@ export default function LocationFooter({ top, imageUrl = LOC_IMG }: Props) {
             }}
           >
             <span>MON - FRI</span>
-            <span>10:00 AM - 08:00 PM</span>
+            <span>10:00AM - 08:00PM</span>
             <span>SAT - SUN</span>
-            <span>10:00 AM - 07:00 PM</span>
+            <span>10:00AM - 7:00PM</span>
           </div>
 
           <h2
@@ -310,7 +310,7 @@ export default function LocationFooter({ top, imageUrl = LOC_IMG }: Props) {
             color: "#8a8a8a",
           }}
         >
-          © 2026 COPYRIGHT BY HAIR UP | DESIGNED BY MARANATHA STUDIO |{" "}
+          ⓒ 2026 COPYRIGHT BY HAIR UP | DESIGNED BY MARANATHA STUDIO |{" "}
           <Link
             href="/admin"
             className="text-[#8a8a8a] underline decoration-transparent underline-offset-4 transition-[color,text-decoration-color] duration-200 hover:text-white hover:decoration-white"

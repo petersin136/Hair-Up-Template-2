@@ -345,7 +345,7 @@ export default function BookingSection({
               style={{
                 gridTemplateColumns: "repeat(7, 1fr)",
                 textAlign: "center",
-                fontFamily: "var(--font-sans)",
+                fontFamily: "var(--font-display)",
                 fontSize: 12,
                 marginBottom: 14,
               }}
@@ -362,7 +362,7 @@ export default function BookingSection({
                 gridTemplateColumns: "repeat(7, 1fr)",
                 gridAutoRows: "1fr",
                 textAlign: "center",
-                fontFamily: "var(--font-sans)",
+                fontFamily: "var(--font-display)",
                 fontSize: 15,
                 alignContent: "space-between",
               }}
